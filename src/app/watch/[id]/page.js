@@ -43,23 +43,23 @@ export default function WatchPage() {
   };
 
   // 3. 核心功能：提交並分析
+  // 3. 核心功能：提交並分析 (含 Local Storage 儲存功能)
   const handleSubmit = () => {
     let score = 0;
-    let wrongTags = {}; // 用來統計錯在哪個概念
+    let wrongTags = {};
 
     quizzes.forEach(quiz => {
       const userAns = userAnswers[quiz.id];
       if (userAns === quiz.correctAnswer) {
         score++;
       } else {
-        // 如果答錯，記錄這個題目的 tag
         if (quiz.tag) {
           wrongTags[quiz.tag] = (wrongTags[quiz.tag] || 0) + 1;
         }
       }
     });
 
-    // 找出錯最多的 tag (簡單演算法)
+    // 找出錯最多的 tag
     let weakestTag = null;
     let maxErrors = 0;
     for (const [tag, count] of Object.entries(wrongTags)) {
@@ -69,11 +69,34 @@ export default function WatchPage() {
       }
     }
 
-    setResult({
+    const finalResult = {
       score,
       total: quizzes.length,
       weakness: weakestTag
-    });
+    };
+
+    setResult(finalResult);
+
+    // --- 新增：將成績存入 Local Storage ---
+    // 資料結構設計：用一個大物件 'learning_records' 存所有影片進度
+    // 格式： { "video_id_A": { score: 2, passed: true }, "video_id_B": ... }
+    try {
+      const storageKey = "learning_records";
+      const currentData = JSON.parse(localStorage.getItem(storageKey) || "{}");
+      
+      currentData[id] = { // 使用影片 ID 當 key
+        score: score,
+        total: quizzes.length,
+        passed: score === quizzes.length, // 全對才算通過，或者你自己定義及格線
+        date: new Date().toISOString()
+      };
+
+      localStorage.setItem(storageKey, JSON.stringify(currentData));
+      console.log("進度已儲存", currentData);
+    } catch (e) {
+      console.error("Local Storage 寫入失敗", e);
+    }
+    // -------------------------------------
   };
 
   if (!video) return <div className="p-10 text-black">載入中...</div>;
