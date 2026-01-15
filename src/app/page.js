@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { db } from "@/firebase"; // 或者是 "../firebase"
+import { db } from "@/app/firebase"; // 或者是 "../firebase"
 import { collection, getDocs } from "firebase/firestore";
 import Link from "next/link";
 
