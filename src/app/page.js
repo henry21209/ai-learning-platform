@@ -1,65 +1,66 @@
-import Image from "next/image";
+// src/app/page.js
+"use client"; // 重要！這行告訴 Next.js 這是要在瀏覽器執行的元件 (因為我們要用 useState)
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { db } from "./firebase"; // 引入我們剛剛設定好的資料庫
+import { collection, getDocs } from "firebase/firestore";
 
 export default function Home() {
+  // 1. 定義一個變數來存影片資料，預設是空陣列 []
+  const [videos, setVideos] = useState([]);
+
+  // 2. 這是一個 "副作用" 函數，網頁一載入就會執行裡面的程式
+  useEffect(() => {
+    async function fetchData() {
+      // 去資料庫找叫做 'videos' 的集合
+      const querySnapshot = await getDocs(collection(db, "videos"));
+      
+      // 把抓回來的資料轉換成我們好讀的格式 (加上 id)
+      const videoList = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      console.log("從 Firebase 抓到的資料:", videoList); // 你可以在瀏覽器 Console 看到它
+      setVideos(videoList); // 把資料存進變數，網頁就會自動更新
+    }
+
+    fetchData();
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="p-8 bg-gray-100 min-h-screen">
+      <h1 className="text-4xl font-bold mb-8 text-center text-blue-600">
+        AI 工具學習平台
+      </h1>
+
+      {/* 這裡是網格佈局，類似 adl.edu.tw 的卡片排列 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        {/* 把 videos 陣列裡的每一筆資料拿出來跑迴圈 */}
+        {videos.map((video) => (
+          <div key={video.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition">
+            <h2 className="text-xl font-bold mb-2">{video.title}</h2>
+            <p className="text-gray-600 mb-4">{video.description}</p>
+            {/* 這裡之後會做成連結，點了跳去觀看頁 */}
+            <Link href={`/watch/${video.id}`}>
+              <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                開始學習
+              </button>
+            </Link>
+          </div>
+        ))}
+        
+      </div>
+      <footer className="mt-20 py-10 text-center text-gray-300 text-sm">
+        <p>© 2026 AI Learning Platform</p>
+        
+        {/* 只有把滑鼠移上去才會變色的隱藏連結 */}
+        <Link href="/admin" className="opacity-0 hover:opacity-100 transition-opacity duration-500 mt-2 inline-block">
+          Admin Portal
+        </Link>
+      </footer>
     </div>
   );
 }
