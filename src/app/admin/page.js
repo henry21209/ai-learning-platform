@@ -86,16 +86,40 @@ export default function AdminPage() {
     setVideoForm({ title: "", video_url: "", description: "" });
   };
 
+  const getEmbedUrl = (url) => {
+    if (!url) return "";
+    
+    // 1. 嘗試抓取 video ID
+    // 支援格式: 
+    // - https://www.youtube.com/watch?v=VIDEO_ID
+    // - https://youtu.be/VIDEO_ID
+    // - https://www.youtube.com/embed/VIDEO_ID
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+
+    // 2. 如果抓到了 ID (且長度是 11 碼標準長度)
+    if (match && match[2].length === 11) {
+      return `https://www.youtube.com/embed/${match[2]}`;
+    }
+    
+    // 3. 抓不到就回傳原網址 (或是你要跳錯也可以)
+    return url;
+  };
+
+
   const handleSubmitVideo = async (e) => {
     e.preventDefault();
     if(!videoForm.title || !videoForm.video_url) return alert("必填欄位為空");
     setLoading(true);
+
+    const cleanUrl = getEmbedUrl(videoForm.video_url);
+
     try {
       if (editVideoId) {
-        await updateDoc(doc(db, "videos", editVideoId), videoForm);
+        await updateDoc(doc(db, "videos", editVideoId), { ...videoForm, video_url: cleanUrl });
         alert("✅ 更新成功");
       } else {
-        await addDoc(collection(db, "videos"), videoForm);
+        await addDoc(collection(db, "videos"), { ...videoForm, video_url: cleanUrl });
         alert("✅ 新增成功");
       }
       handleCancelEditVideo();
