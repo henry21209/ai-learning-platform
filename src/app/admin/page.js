@@ -68,6 +68,14 @@ export default function AdminPage() {
     window.location.reload(); // 重新整理頁面確保狀態清空
   };
 
+  // --- 開發者工具：清除本機紀錄 ---
+  const handleClearLocalData = () => {
+    if(!confirm("🧹 確定要清除【本機】的學習紀錄嗎？\n\n注意：這只會清除「你這台電腦」瀏覽器裡的測驗紀錄，用來方便你測試。\n不會影響其他使用者的資料。")) return;
+    
+    localStorage.removeItem("learning_records");
+    alert("✅ 本機學習紀錄已清除，你可以重新測試測驗功能了。");
+  };
+
   // --- Data Logic ---
   const fetchVideos = async () => {
     const querySnapshot = await getDocs(collection(db, "videos"));
@@ -233,7 +241,24 @@ export default function AdminPage() {
             {user.photoURL && <img src={user.photoURL} className="w-8 h-8 rounded-full" />}
             <span className="font-bold text-gray-700">{user.displayName} (管理員)</span>
         </div>
-        <button onClick={handleLogout} className="text-sm text-red-500 hover:text-red-700 font-bold border border-red-200 px-3 py-1 rounded bg-white">登出</button>
+        <div className="flex gap-3">
+          {/* 新增：清除紀錄按鈕 (Debug用) */}
+          <button 
+            onClick={handleClearLocalData} 
+            className="text-sm text-gray-500 hover:text-gray-800 font-bold border border-gray-300 px-3 py-1 rounded bg-white hover:bg-gray-50 transition"
+            title="清除我這台電腦的測驗紀錄"
+          >
+            🧹 清除本機紀錄
+          </button>
+
+          {/* 原本的登出按鈕 */}
+          <button 
+            onClick={handleLogout} 
+            className="text-sm text-red-500 hover:text-red-700 font-bold border border-red-200 px-3 py-1 rounded bg-white hover:bg-red-50 transition"
+          >
+            登出
+          </button>
+        </div>
       </div>
 
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
