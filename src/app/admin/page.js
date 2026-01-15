@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { db } from "@/firebase";
+import { db } from "@/app/firebase";
 import { collection, getDocs, addDoc, deleteDoc, updateDoc, doc, query, where, writeBatch } from "firebase/firestore";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "firebase/auth";
 
